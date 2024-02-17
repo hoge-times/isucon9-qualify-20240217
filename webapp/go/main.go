@@ -611,6 +611,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 
 	rootCategory, err := getCategoryByID(dbx, rootCategoryID)
 	if err != nil || rootCategory.ParentID != 0 {
+		log.Print(err)
 		outputErrorMsg(w, http.StatusNotFound, "category not found")
 		return
 	}
