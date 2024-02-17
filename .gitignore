@@ -4,3 +4,6 @@ webapp/nodejs
 webapp/perl
 webapp/python
 webapp/ruby
+initial-data/result/items_json.txt
+initial-data
+webapp/sql/initial.sql
