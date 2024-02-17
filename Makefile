@@ -36,15 +36,16 @@ bn:
 # アプリ､nginx､mysqlの再起動
 .PHONY: re
 re:
+	make arestart
 	make nrestart
 	make mrestart
 
 # アプリの再起動
 .PHONY: arestart
 arestart:
-	cd golang && make all
-	sudo systemctl restart isu-go.service
-	sudo systemctl status isu-go.service
+	cd webapp/go && make all
+	sudo systemctl restart isucari.golang.service
+	sudo systemctl status isucari.golang.service
 
 # nginxの再起動
 .PHONY: nrestart
@@ -72,7 +73,7 @@ nalp:
 # mysqlのslowlogを見る
 .PHONY: pt
 pt:
-	sudo pt-query-digest /var/log/mysql/slow.log
+	now=`date "+%Y%m%d%H%M%S"` && sudo pt-query-digest /var/log/mysql/slow.log >> ~/pt${now}.log
 
 .PHONY: log
 log:
