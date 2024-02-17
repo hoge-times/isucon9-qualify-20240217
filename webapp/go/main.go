@@ -305,7 +305,7 @@ func main() {
 	}
 
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=Local",
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=Local&interpolateParams=true",
 		user,
 		password,
 		host,
@@ -528,6 +528,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 	items := []Item{}
 	if itemID > 0 && createdAt > 0 {
 		// paging
+		// ORDER BY `id` DESC だけでいいかも
 		err := dbx.Select(&items,
 			"SELECT * FROM `items` WHERE `status` IN (?,?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			ItemStatusOnSale,
@@ -544,6 +545,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// 1st page
+		// ORDER BY `id` DESC だけでいいかも
 		err := dbx.Select(&items,
 			"SELECT * FROM `items` WHERE `status` IN (?,?) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			ItemStatusOnSale,
@@ -559,6 +561,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
+		// N+1
 		seller, err := getUserSimpleByID(dbx, item.SellerID)
 		if err != nil {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
@@ -645,6 +648,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 	var inArgs []interface{}
 	if itemID > 0 && createdAt > 0 {
 		// paging
+		// ORDER BY `id` DESC だけでいいかも
 		inQuery, inArgs, err = sqlx.In(
 			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			ItemStatusOnSale,
@@ -662,6 +666,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// 1st page
+		// ORDER BY `id` DESC だけでいいかも
 		inQuery, inArgs, err = sqlx.In(
 			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) ORDER BY created_at DESC, id DESC LIMIT ?",
 			ItemStatusOnSale,
@@ -687,6 +692,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
+		// N+1
 		seller, err := getUserSimpleByID(dbx, item.SellerID)
 		if err != nil {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
@@ -767,6 +773,7 @@ func getUserItems(w http.ResponseWriter, r *http.Request) {
 	items := []Item{}
 	if itemID > 0 && createdAt > 0 {
 		// paging
+		// ORDER BY `id` DESC だけでいいかも
 		err := dbx.Select(&items,
 			"SELECT * FROM `items` WHERE `seller_id` = ? AND `status` IN (?,?,?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			userSimple.ID,
@@ -785,6 +792,7 @@ func getUserItems(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// 1st page
+		// ORDER BY `id` DESC だけでいいかも
 		err := dbx.Select(&items,
 			"SELECT * FROM `items` WHERE `seller_id` = ? AND `status` IN (?,?,?) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			userSimple.ID,
@@ -802,6 +810,7 @@ func getUserItems(w http.ResponseWriter, r *http.Request) {
 
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
+		// N+1
 		category, err := getCategoryByID(dbx, item.CategoryID)
 		if err != nil {
 			outputErrorMsg(w, http.StatusNotFound, "category not found")
@@ -871,6 +880,7 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 	items := []Item{}
 	if itemID > 0 && createdAt > 0 {
 		// paging
+		// ORDER BY `id` DESC だけでいいかも
 		err := tx.Select(&items,
 			"SELECT * FROM `items` WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?,?,?,?,?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			user.ID,
@@ -893,6 +903,7 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// 1st page
+		// ORDER BY `id` DESC だけでいいかも
 		err := tx.Select(&items,
 			"SELECT * FROM `items` WHERE (`seller_id` = ? OR `buyer_id` = ?) AND `status` IN (?,?,?,?,?) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
 			user.ID,
