@@ -25,3 +25,55 @@ staticcheck:
 
 clean:
 	rm -rf bin/*
+
+
+# ここから俺等
+.PHONY: bn
+bn:
+	make re
+	./bin/benchmarker -target-url http://localhost
+
+# アプリ､nginx､mysqlの再起動
+.PHONY: re
+re:
+	make nrestart
+	make mrestart
+
+# アプリの再起動
+.PHONY: arestart
+arestart:
+	cd golang && make all
+	sudo systemctl restart isu-go.service
+	sudo systemctl status isu-go.service
+
+# nginxの再起動
+.PHONY: nrestart
+nrestart:
+	sudo rm /var/log/nginx/access.log
+	sudo systemctl reload nginx
+	sudo systemctl status nginx
+
+# mysqlの再起動
+.PHONY: mrestart
+mrestart:
+	sudo rm /var/log/mysql/slow.log
+	sudo mysqladmin flush-logs
+	sudo systemctl restart mysql
+	sudo systemctl status mysql
+	echo "set global slow_query_log = 1;" | sudo mysql
+	echo "set global slow_query_log_file = '/var/log/mysql/slow.log';" | sudo mysql
+	echo "set global long_query_time = 0;" | sudo mysql
+
+# アプリのログを見る
+.PHONY: nalp
+nalp:
+	sudo cat /var/log/nginx/access.log | alp ltsv -m "/image/\d+.(jpg|png|gif)","/posts/\d+","/\@\w+" --sort=sum --reverse --filters 'Time > TimeAgo("5m")'
+
+# mysqlのslowlogを見る
+.PHONY: pt
+pt:
+	sudo pt-query-digest /var/log/mysql/slow.log
+
+.PHONY: log
+log:
+	journalctl -xe | grep  app.go
