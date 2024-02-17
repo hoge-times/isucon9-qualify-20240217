@@ -650,7 +650,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		// paging
 		// ORDER BY `id` DESC だけでいいかも
 		inQuery, inArgs, err = sqlx.In(
-			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `created_at` DESC, `id` DESC LIMIT ?",
+			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) AND (`created_at` < ?  OR (`created_at` <= ? AND `id` < ?)) ORDER BY `id` DESC LIMIT ?",
 			ItemStatusOnSale,
 			ItemStatusSoldOut,
 			categoryIDs,
@@ -668,7 +668,7 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		// 1st page
 		// ORDER BY `id` DESC だけでいいかも
 		inQuery, inArgs, err = sqlx.In(
-			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) ORDER BY created_at DESC, id DESC LIMIT ?",
+			"SELECT * FROM `items` WHERE `status` IN (?,?) AND category_id IN (?) ORDER BY id DESC LIMIT ?",
 			ItemStatusOnSale,
 			ItemStatusSoldOut,
 			categoryIDs,
